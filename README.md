@@ -3,7 +3,7 @@
 Strips BOMs and carriage returns from files and concatenates them to
 standard output.
 
-Practically equivalent to "`cat <...> | dos2unix`", but Windows doesn't have
+Practically equivalent to `cat <...> | dos2unix`, but Windows doesn't have
 that :c.
 
 ```console
