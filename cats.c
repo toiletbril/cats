@@ -250,7 +250,6 @@ static void cats(FILE* f, const char* filename)
 
         if (c == EOF)
             continue;
-        ;
 
         if (line_numbers && prev_is_lf) {
             printf("%6d\t", ++current_line);
