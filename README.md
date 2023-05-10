@@ -4,7 +4,10 @@ Strips BOMs and carriage returns from files and concatenates them to
 standard output.
 
 Almost equivalent to `cat <...> | dos2unix`, but Windows doesn't have
-that :c. Strips UTF-16 BOMs as well.
+that :c.
+
+**NOTE**: Strips UTF-16 BOMs as well.
+
 
 ## Usage
 
@@ -40,3 +43,6 @@ cats: bom.txt: Stripped CRLF line endings, removed UTF-8 mark.
 ```console
 cc -O2 -Wall -Wextra -pedantic cats.c -o bin/cats.exe
 ```
+
+This software is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY.
