@@ -13,7 +13,7 @@ $ cats --help
 Usage: cats [-options] <file> [file2, file3, ...]
 Concatenate file(s) to standard output, stripping BOMs and CRs.
 
-Please note that PowerShell adds BOM whenredirecting output,
+Please note that PowerShell adds BOM when redirecting output,
 and you should probably use cmd.exe instead. You will still get CRs that way.
 
 Options:

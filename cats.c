@@ -67,7 +67,7 @@ static void usage(void)
         "and CRs.\n");
 #ifdef _WIN32
     printf(
-        "\nPlease note that PowerShell adds BOM when"
+        "\nPlease note that PowerShell adds BOM when "
         "redirecting output,\n"
         "and you should probably use cmd.exe instead. You will still get CRs "
         "that way.\n");
