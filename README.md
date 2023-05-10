@@ -21,7 +21,7 @@ Options:
         -n              Output line numbers.
         -A              Replace control characters with their sequences.
         -s              Suppress all blank lines.
-        -u              Buffer by lines.
+        -u              Don't buffer output.
             --help      Display this message.
             --version   Display version.
 ```
