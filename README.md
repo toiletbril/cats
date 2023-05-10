@@ -12,14 +12,15 @@ that :c.
 $ cats --help
 Usage: cats [-options] <file> [file2, file3, ...]
 Concatenate file(s) to standard output, stripping BOMs and CRs.
-Please note that PowerShell adds BOM when redirecting output.
+
+Please note that PowerShell adds BOM when redirecting output, and you should probably use cmd.exe instead. You will still get CRs that way.
 
 Options:
         -v              Output summary.
         -n              Output line numbers.
         -A              Replace control characters with their sequences.
         -s              Suppress all blank lines.
-        -u              Output by lines.
+        -u              Buffer by lines.
             --help      Display this message.
             --version   Display version.
 ```
