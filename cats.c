@@ -8,7 +8,7 @@
     that :c.
     (c) toiletbril <https://github.com/toiletbril>
 */
-d
+
 #include <ctype.h>
 #include <locale.h>
 #include <stdbool.h>

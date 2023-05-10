@@ -8,7 +8,6 @@ that :c.
 
 **NOTE**: Strips UTF-16 BOMs as well.
 
-
 ## Usage
 
 ```console
