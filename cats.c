@@ -8,7 +8,7 @@
     that :c.
     (c) toiletbril <https://github.com/toiletbril>
 */
-
+d
 #include <ctype.h>
 #include <locale.h>
 #include <stdbool.h>
@@ -248,8 +248,9 @@ static void cats(FILE* f, const char* filename)
             continue;
         }
 
-        if (c == EOF)
+        if (c == EOF) {
             continue;
+        }
 
         if (line_numbers && prev_is_lf) {
             printf("%6d\t", ++current_line);
