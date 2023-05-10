@@ -6,7 +6,7 @@
 
     Practically equivalent to "cat <...> | dos2unix", but Windows doesn't have
     that :c.
-    (c) toiletbril
+    (c) toiletbril <https://github.com/toiletbril>
 */
 
 #include <ctype.h>
@@ -56,7 +56,7 @@ static bool suppress_blank = false;
 static bool line_numbers = false;
 static bool show_control = false;
 static bool use_stdin = false;
-static bool line_buffer = false;
+static bool unbuffered = false;
 static bool verbose = false;
 
 static void usage(void)
@@ -78,7 +78,7 @@ static void usage(void)
         "\t-n\t\tOutput line numbers.\n"
         "\t-A\t\tReplace control characters with their sequences.\n"
         "\t-s\t\tSuppress all blank lines.\n"
-        "\t-u\t\tBuffer by lines.\n"
+        "\t-u\t\tDon't buffer output.\n"
         "\t    --help\tDisplay this message.\n"
         "\t    --version\tDisplay version.\n");
 
@@ -142,7 +142,7 @@ static bool set_flag(const char* str)
             } break;
 
             case 'u': {
-                line_buffer = true;
+                unbuffered = true;
             } break;
 
             // Long arguments go here.
@@ -152,7 +152,7 @@ static bool set_flag(const char* str)
                     exit(0);
                 } else if (strcmp(str, "--version") == 0) {
                     printf(
-                        "Stripping cat %s\n"
+                        "stripping cat %s\n"
                         "(c) toiletbril %s\n",
                         VERSION, GITHUB);
                     exit(0);
@@ -233,7 +233,7 @@ static void cats(FILE* f, const char* filename)
 
     while (!feof(f)) {
         if (c == '\n') {
-            if (line_buffer)
+            if (unbuffered)
                 fflush(stdout);
             prev_is_lf = true;
         }
@@ -318,14 +318,16 @@ int main(int argv, char** argc)
     if (!has_files)
         use_stdin = true;
 
-    int err = setvbuf(stdout, NULL, BUFFER_TYPE, BUFFER_SIZE);
+    if (!unbuffered) {
+        int err = setvbuf(stdout, NULL, BUFFER_TYPE, BUFFER_SIZE);
 
-    if (err) {
-        fprintf(stderr,
-                "%s: Could not allocate line buffer of size %d.\nTry "
-                "running with -u option.\n",
-                NAME, BUFFER_SIZE);
-        exit(1);
+        if (err) {
+            fprintf(stderr,
+                    "%s: Could not allocate line buffer of size %d.\nTry "
+                    "running with -u option.\n",
+                    NAME, BUFFER_SIZE);
+            exit(1);
+        }
     }
 
     if (use_stdin) {
