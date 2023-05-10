@@ -1,14 +1,16 @@
 ```
-cats
+    cats 1.0
 
-Strips BOMs and carriage returns from files and concatenates them to
-standard output.
+    Strips BOMs and carriage returns from files and concatenates them to
+    standard output.
 
-Practically equivalent to "cat <...> | dos2unix", but Windows doesn't have that :c.
-(c) toiletbril
+    Practically equivalent to "cat <...> | dos2unix", but Windows doesn't have
+    that :c.
+    (c) toiletbril
 ```
 
 ```console
+$ cats
 Usage: cats [-options] <file> [file2, file3, ...]
 Concatenate file(s) to standard output, stripping BOMs and CRs.
 Please note that PowerShell adds BOM when redirecting output.
