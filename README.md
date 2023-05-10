@@ -6,8 +6,10 @@ standard output.
 Practically equivalent to `cat <...> | dos2unix`, but Windows doesn't have
 that :c.
 
+## Usage
+
 ```console
-$ cats
+$ cats --help
 Usage: cats [-options] <file> [file2, file3, ...]
 Concatenate file(s) to standard output, stripping BOMs and CRs.
 Please note that PowerShell adds BOM when redirecting output.
@@ -29,4 +31,10 @@ $ cat bom.txt | ./readlines.py
 $ cats bom.txt -v | ./readlines.py
 cats: bom.txt: Stripped CRLF line endings, removed UTF-8 mark.
 ['hiiiii\n', ':3\n', 'how are you\n', 'this is utf-8 file with crlf and bom :c\n']
+```
+
+## Building
+
+```console
+cc -O2 -Wall -Wextra -pedantic cats.c -o bin/cats.exe
 ```
