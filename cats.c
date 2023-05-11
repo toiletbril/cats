@@ -1,5 +1,5 @@
 /*
-    cats 1.0
+    cats 1.1
 
     Strips BOMs and carriage returns from files and concatenates them to
     standard output.
@@ -17,7 +17,7 @@
 #include <string.h>
 
 #define NAME "cats"
-#define VERSION "1.0"
+#define VERSION "1.1"
 #define GITHUB "<https://github.com/toiletbril>"
 
 #ifdef _WIN32
@@ -231,7 +231,7 @@ static void cats(FILE* f, const char* filename)
 
     bool found_cr = false;
 
-    while (!feof(f)) {
+    while (true) {
         if (c == '\n') {
             if (unbuffered)
                 fflush(stdout);
@@ -240,15 +240,15 @@ static void cats(FILE* f, const char* filename)
 
         c = fgetc(f);
 
+        if (c == EOF) {
+            break;
+        }
+
         if (!found_cr && c == '\r') {
             found_cr = true;
         }
 
         if (suppress_blank && prev_is_lf && (c == '\r' || c == '\n')) {
-            continue;
-        }
-
-        if (c == EOF) {
             continue;
         }
 
@@ -291,7 +291,7 @@ static void cats(FILE* f, const char* filename)
         fprintf(stderr, "%s: %s: ", NAME, filename);
 
         if (found_cr)
-            fputs("Stripped CRLF line endings", stderr);
+            fputs("Stripped CRs from line ends", stderr);
         else
             fputs("No CRs found", stderr);
 

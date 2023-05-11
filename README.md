@@ -33,13 +33,13 @@ $ cat bom.txt | ./readlines.py
 ['\ufeffhiiiii\n', ':3\n', 'how are you\n', 'this is utf-8 file with crlf and bom :c\n']
 
 $ cats bom.txt -v | ./readlines.py
-cats: bom.txt: Stripped CRLF line endings, removed UTF-8 mark.
+cats: bom.txt: Stripped CRs from line ends, removed UTF-8 mark.
 ['hiiiii\n', ':3\n', 'how are you\n', 'this is utf-8 file with crlf and bom :c\n']
 ```
 
 ## Building
 
-```console
+```
 cc -O2 -Wall -Wextra -pedantic cats.c -o bin/cats.exe
 ```
 
