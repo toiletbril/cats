@@ -1,5 +1,5 @@
 /*
-    cats 1.1
+    cats 1.2
 
     Strips BOMs and carriage returns from files and concatenates them to
     standard output.
@@ -9,6 +9,16 @@
     (c) toiletbril <https://github.com/toiletbril>
 */
 
+#ifdef _WIN32
+#define _CRT_SECURE_NO_WARNINGS
+#include <fcntl.h>
+#include <io.h>
+#define DIR_CHAR '\\'
+#else
+#define DIR_CHAR '/'
+#endif
+
+#include <errno.h>
 #include <ctype.h>
 #include <locale.h>
 #include <stdbool.h>
@@ -17,16 +27,8 @@
 #include <string.h>
 
 #define NAME "cats"
-#define VERSION "1.1"
+#define VERSION "1.2"
 #define GITHUB "<https://github.com/toiletbril>"
-
-#ifdef _WIN32
-#include <fcntl.h>
-#include <io.h>
-#define DIR_CHAR '\\'
-#else
-#define DIR_CHAR '/'
-#endif
 
 #ifdef __BORLANDC__
 #define _setmode setmode
@@ -85,15 +87,6 @@ static void usage(void)
     exit(0);
 }
 
-static void put_errno(const char* filename)
-{
-    char error[128];
-    strerror_s(error, 128, errno);
-
-    fprintf(stderr, "%s: %s: %s\n", NAME, filename, error);
-    exit(1);
-}
-
 static bool bytescmp(char* bytes, size_t bytes_length, const char* bytes2)
 {
     for (size_t i = 0; i < bytes_length; ++i) {
@@ -108,7 +101,7 @@ static int get_bom_length(char bytes[3])
 {
     for (int i = 0; i < BOMS_LENGTH; ++i) {
         if (bytescmp(bytes, bom_byte_count[i], bom_bytes[i])) {
-            strcpy_s(found_bom_name, 16, bom_names[i]);
+            strcpy(found_bom_name, bom_names[i]);
             return bom_byte_count[i];
         }
     }
@@ -183,7 +176,7 @@ static bool get_control_seq(char* buf, const unsigned char c)
     if (c >= CONTROL_CHARS_LENGTH)
         return false;
 
-    strcpy_s(buf, 3, control_chars[c]);
+    strcpy(buf, control_chars[c]);
 
     return true;
 }
@@ -195,6 +188,8 @@ static void set_binary_mode(FILE* stream)
     if (err == -1) {
         perror("_setmode failed");
     }
+#else
+	(void)stream;
 #endif
 }
 
@@ -210,7 +205,7 @@ static void cats(FILE* f, const char* filename)
     // TODO:
     // Undefined behavior when C^C with -i
     // and haven't inputted 4 chars
-    fread_s(maybe_bom, 3, sizeof(char), 3, f);
+    fread(maybe_bom, sizeof(char), 3, f);
     int bom_len = get_bom_length(maybe_bom);
 
     // If using stdin and there is no bom,
@@ -344,10 +339,10 @@ int main(int argv, char** argc)
         }
 
         FILE* f;
-        errno_t err = fopen_s(&f, filename, "rb");
+        f = fopen(filename, "rb");
 
-        if (err) {
-            put_errno(filename);
+        if (errno) {
+            perror(filename);
             exit(1);
         }
 

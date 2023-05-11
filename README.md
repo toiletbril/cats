@@ -39,9 +39,8 @@ cats: bom.txt: Stripped CRs from line ends, removed UTF-8 mark.
 
 ## Building
 
-```
-cc -O2 -Wall -Wextra -pedantic cats.c -o bin/cats.exe
-```
+Use `build.sh` (Linux) or `build_clang.bat` (Windows).
+Look for executable in `bin/` afterwards.
 
 This software is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY.
