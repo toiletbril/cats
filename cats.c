@@ -1,5 +1,5 @@
 /*
-    cats 1.2
+    cats 1.3
 
     Strips BOMs and carriage returns from files and concatenates them to
     standard output.
@@ -18,16 +18,17 @@
 #define DIR_CHAR '/'
 #endif
 
-#include <errno.h>
 #include <ctype.h>
+#include <errno.h>
 #include <locale.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
 
 #define NAME "cats"
-#define VERSION "1.2"
+#define VERSION "1.3"
 #define GITHUB "<https://github.com/toiletbril>"
 
 #ifdef __BORLANDC__
@@ -35,7 +36,7 @@
 #endif
 
 #define CONTROL_CHARS_LENGTH 32
-static const char* control_chars[] = {
+static const char *control_chars[] = {
     "^@", "^A", "^B", "^C", "^D", "^E", "^F",  "^G", "^H", "^I", "$",
     "^K", "^L", "^M", "^N", "^O", "^P", "^Q",  "^R", "^S", "^T", "^U",
     "^V", "^W", "^X", "^Y", "^Z", "^[", "^\\", "^]", "^^", "^_"};
@@ -46,8 +47,8 @@ static const char utf16le[] = {0xFF, 0xFE};
 
 #define BOMS_LENGTH 3
 static const int bom_byte_count[] = {3, 2, 2};
-static const char* bom_bytes[] = {utf8, utf16be, utf16le};
-static const char* bom_names[] = {"UTF-8", "UTF-16BE", "UTF-16LE"};
+static const char *bom_bytes[] = {utf8, utf16be, utf16le};
+static const char *bom_names[] = {"UTF-8", "UTF-16BE", "UTF-16LE"};
 
 static char found_bom_name[16];
 
@@ -64,9 +65,8 @@ static bool verbose = false;
 static void usage(void)
 {
     printf("Usage: %s [-options] <file> [file2, file3, ...]\n", NAME);
-    printf(
-        "Concatenate file(s) to standard output, stripping BOMs "
-        "and CRs.\n");
+    printf("Concatenate file(s) to standard output, stripping BOMs "
+           "and CRs.\n");
 #ifdef _WIN32
     printf(
         "\nPlease note that PowerShell adds BOM when "
@@ -74,20 +74,19 @@ static void usage(void)
         "and you should probably use cmd.exe instead. You will still get CRs "
         "that way.\n");
 #endif
-    printf(
-        "\nOptions:\n"
-        "\t-v\t\tOutput summary.\n"
-        "\t-n\t\tOutput line numbers.\n"
-        "\t-A\t\tReplace control characters with their sequences.\n"
-        "\t-s\t\tSuppress all blank lines.\n"
-        "\t-u\t\tDon't buffer output.\n"
-        "\t    --help\tDisplay this message.\n"
-        "\t    --version\tDisplay version.\n");
+    printf("\nOptions:\n"
+           "\t-v\t\tOutput summary.\n"
+           "\t-n\t\tOutput line numbers.\n"
+           "\t-A\t\tReplace control characters with their sequences.\n"
+           "\t-s\t\tSuppress all blank lines.\n"
+           "\t-u\t\tDon't buffer output.\n"
+           "\t    --help\tDisplay this message.\n"
+           "\t    --version\tDisplay version.\n");
 
     exit(0);
 }
 
-static bool bytescmp(char* bytes, size_t bytes_length, const char* bytes2)
+static bool bytescmp(char *bytes, size_t bytes_length, const char *bytes2)
 {
     for (size_t i = 0; i < bytes_length; ++i) {
         if (bytes[i] != bytes2[i])
@@ -109,7 +108,7 @@ static int get_bom_length(char bytes[3])
     return 0;
 }
 
-static bool set_flag(const char* str)
+static bool set_flag(const char *str)
 {
     if (str[0] != '-')
         return false;
@@ -144,10 +143,9 @@ static bool set_flag(const char* str)
                     usage();
                     exit(0);
                 } else if (strcmp(str, "--version") == 0) {
-                    printf(
-                        "stripping cat %s\n"
-                        "(c) toiletbril %s\n",
-                        VERSION, GITHUB);
+                    printf("stripping cat %s\n"
+                           "(c) toiletbril %s\n",
+                           VERSION, GITHUB);
                     exit(0);
                 } else {
                     fprintf(stderr,
@@ -171,7 +169,7 @@ static bool set_flag(const char* str)
     return true;
 }
 
-static bool get_control_seq(char* buf, const unsigned char c)
+static bool get_control_seq(char *buf, const unsigned char c)
 {
     if (c >= CONTROL_CHARS_LENGTH)
         return false;
@@ -181,7 +179,7 @@ static bool get_control_seq(char* buf, const unsigned char c)
     return true;
 }
 
-static void set_binary_mode(FILE* stream)
+static void set_binary_mode(FILE *stream)
 {
 #ifdef _WIN32
     int err = _setmode(_fileno(stream), _O_BINARY);
@@ -189,11 +187,11 @@ static void set_binary_mode(FILE* stream)
         perror("_setmode failed");
     }
 #else
-	(void)stream;
+    (void)stream;
 #endif
 }
 
-static void cats(FILE* f, const char* filename)
+static void cats(FILE *f, const char *filename)
 {
     static char c = '\0';
     static int current_line = 0;
@@ -299,7 +297,7 @@ static void cats(FILE* f, const char* filename)
     }
 }
 
-int main(int argv, char** argc)
+int main(int argv, char **argc)
 {
     set_binary_mode(stdout);
     setlocale(LC_ALL, "");
@@ -332,13 +330,22 @@ int main(int argv, char** argc)
     }
 
     for (int i = 1; i < argv; ++i) {
-        const char* filename = argc[i];
+        const char *filename = argc[i];
 
         if (set_flag(&filename[0])) {
             continue;
         }
 
-        FILE* f;
+        struct stat stbuf;
+        stat(filename, &stbuf);
+
+        // Check whether filename refers to directory
+        if ((stbuf.st_mode & S_IFMT) == S_IFDIR) {
+            fprintf(stderr, "%s: Is a directory\n", filename);
+            exit(1);
+        }
+
+        FILE *f;
         f = fopen(filename, "rb");
 
         if (errno) {

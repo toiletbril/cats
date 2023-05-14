@@ -6,7 +6,7 @@ standard output.
 Almost equivalent to `cat <...> | dos2unix`, but Windows doesn't have
 that :c.
 
-**NOTE**: Strips UTF-16 BOMs as well.
+**NOTE**: Strips UTF-16 BOMs as well, does not convert them to UTF-8 (TODO?).
 
 ## Usage
 
