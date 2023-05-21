@@ -10,12 +10,12 @@
 */
 
 #ifdef _WIN32
-#define _CRT_SECURE_NO_WARNINGS
-#include <fcntl.h>
-#include <io.h>
-#define DIR_CHAR '\\'
+    #define _CRT_SECURE_NO_WARNINGS
+    #include <fcntl.h>
+    #include <io.h>
+    #define DIR_CHAR '\\'
 #else
-#define DIR_CHAR '/'
+    #define DIR_CHAR '/'
 #endif
 
 #include <ctype.h>
@@ -32,7 +32,7 @@
 #define GITHUB "<https://github.com/toiletbril>"
 
 #ifdef __BORLANDC__
-#define _setmode setmode
+    #define _setmode setmode
 #endif
 
 #define CONTROL_CHARS_LENGTH 32

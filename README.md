@@ -39,8 +39,6 @@ cats: bom.txt: Stripped CRs from line ends, removed UTF-8 mark.
 
 ## Building
 
-Use `build.sh` (Linux) or `build.bat` (Windows).
+To build with Clang, use `build.sh` (POSIX) or `build.bat` (Windows).
 Look for executable in `bin/` afterwards.
 
-This software is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY.

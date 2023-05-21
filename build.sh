@@ -1,5 +1,6 @@
 #!/bin/bash
 
+CC=clang
 CATS=cats.c
 FLAGS="-O2 -Wall -Wextra -pedantic"
 OUT=bin
@@ -8,4 +9,4 @@ mkdir -p $OUT
 
 set -x
 
-cc $FLAGS $CATS -o $OUT/cats
+$CC $FLAGS $CATS -o $OUT/cats
