@@ -1,5 +1,5 @@
 /*
-    cats 1.3
+    cats 1.4
 
     Strips BOMs and carriage returns from files and concatenates them to
     standard output.
@@ -84,6 +84,12 @@ static void usage(void)
            "\t    --version\tDisplay version.\n");
 
     exit(0);
+}
+
+void puterror(const char *filename) {
+    fprintf(stderr, "%s: ", NAME);
+    perror(filename);
+    exit(1);
 }
 
 static bool bytescmp(char *bytes, size_t bytes_length, const char *bytes2)
@@ -184,7 +190,7 @@ static void set_binary_mode(FILE *stream)
 #ifdef _WIN32
     int err = _setmode(_fileno(stream), _O_BINARY);
     if (err == -1) {
-        perror("_setmode failed");
+        puterror("_setmode failed");
     }
 #else
     (void)stream;
@@ -341,7 +347,7 @@ int main(int argv, char **argc)
 
         // Check whether filename refers to directory
         if ((stbuf.st_mode & S_IFMT) == S_IFDIR) {
-            fprintf(stderr, "%s: Is a directory\n", filename);
+            fprintf(stderr, "%s: %s: Is a directory\n", NAME, filename);
             exit(1);
         }
 
@@ -349,7 +355,7 @@ int main(int argv, char **argc)
         f = fopen(filename, "rb");
 
         if (errno) {
-            perror(filename);
+            puterror(filename);
             exit(1);
         }
 
