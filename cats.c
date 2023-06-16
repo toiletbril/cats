@@ -1,5 +1,5 @@
 /*
-    cats 1.6
+    cats 1.7
 
     Strips BOMs and carriage returns from files and concatenates them to
     standard output.
@@ -34,7 +34,6 @@
     #include <io.h>
     #define DIR_CHAR '\\'
 #else
-    #include <unistd.h>
     #define DIR_CHAR '/'
 #endif
 
@@ -49,7 +48,7 @@
 #include <sys/stat.h>
 
 #define NAME "cats"
-#define VERSION "1.6"
+#define VERSION "1.7"
 #define GITHUB "<https://github.com/toiletbril>"
 
 #ifdef __BORLANDC__
@@ -425,7 +424,7 @@ static void catstemp(const char *filename, size_t size, char *buf)
     strncat(buf, ".catstemp", size);
 
     if (strncmp(filename, buf, size) == 0) {
-        fprintf(stderr, "%s: Filename is too long or there is already a .catstemp file.",
+        fprintf(stderr, "%s: Filename is too long or there is already a .catstemp file.\n",
                 NAME);
         exit(1);
     }
@@ -470,14 +469,37 @@ int main(int argv, char **argc)
 
     if (use_stdin) {
         if (overwrite) {
-            fprintf(stderr, "%s: Can not overwrite STDIN", NAME);
+            fprintf(stderr, "%s: Can't overwrite STDIN\n", NAME);
             exit(1);
         }
 
-        char buf[4] = {'\0'};
+        char buf[4] = {0};
         set_binary_mode(stdin);
 
-        cats(stdin, "STDIN", buf, peek_bom(stdin, buf), stdout);
+        int bom = peek_bom(stdin, buf);
+
+        if (convert && bom > 0) {
+            char temp_filename[64];
+            catstemp("STDIN", 64, temp_filename);
+
+            FILE *new_file = fopen(temp_filename, "wb");
+            if (new_file == NULL) {
+                puterror(temp_filename);
+            }
+
+            utf8_from_utf16(stdin, "STDIN", new_file, bom == 1);
+
+            freopen(temp_filename, "rb", new_file);
+            if (new_file == NULL) {
+                puterror(temp_filename);
+            }
+
+            cats(new_file, "STDIN", buf, bom, stdout);
+            fclose(new_file);
+            remove(temp_filename);
+        } else {
+            cats(stdin, "STDIN", buf, bom, stdout);
+        }
         return 0;
     }
 
@@ -501,7 +523,7 @@ int main(int argv, char **argc)
             puterror(filename);
         }
 
-        char buf[4] = {'\0'};
+        char buf[4] = {0};
         int bom     = peek_bom(file, buf);
 
         if ((convert && bom > 0) || overwrite) {
@@ -511,7 +533,7 @@ int main(int argv, char **argc)
             if (strcmp(temp_filename, filename) == 0) {
                 fprintf(
                     stderr,
-                    "%s: Error converting UTF-16 to UTF-8: Filename is too long",
+                    "%s: Error converting UTF-16 to UTF-8: Filename is too long\n",
                     NAME);
                 fclose(file);
                 exit(1);
@@ -547,9 +569,9 @@ int main(int argv, char **argc)
                 cats(new_file, filename, buf, bom, stdout);
             }
 
+            fclose(file);
             fclose(new_file);
             remove(temp_filename);
-            fclose(file);
         }
         else {
             cats(file, filename, buf, bom, stdout);
