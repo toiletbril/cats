@@ -9,23 +9,23 @@
 
     Copyright (c) 2023 toiletbril <https://github.com/toiletbril>
 
-    Permission is hereby granted, free of charge, to any person obtaining a copy
-    of this software and associated documentation files (the "Software"), to deal
-    in the Software without restriction, including without limitation the rights
-    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-    copies of the Software, and to permit persons to whom the Software is
-    furnished to do so, subject to the following conditions:
+    Permission is hereby granted, free of charge, to any person obtaining a
+    copy of this software and associated documentation files (the "Software"),
+    to deal in the Software without restriction, including without limitation
+    the rights to use, copy, modify, merge, publish, distribute, sublicense,
+    and/or sell copies of the Software, and to permit persons to whom the
+    Software is furnished to do so, subject to the following conditions:
 
-    The above copyright notice and this permission notice shall be included in all
-    copies or substantial portions of the Software.
+    The above copyright notice and this permission notice shall be included in
+    all copies or substantial portions of the Software.
 
     THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
     IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
     FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
     AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-    SOFTWARE.
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+    IN THE SOFTWARE.
 */
 
 #ifdef _WIN32
@@ -57,10 +57,10 @@
 #endif
 
 #define CONTROL_CHARS_LENGTH 32
-static const char *control_chars[] = {
-    "^@", "^A", "^B", "^C", "^D", "^E", "^F", "^G", "^H", "^I", "$",
-    "^K", "^L", "^M", "^N", "^O", "^P", "^Q", "^R", "^S", "^T", "^U",
-    "^V", "^W", "^X", "^Y", "^Z", "^[", "^\\", "^]", "^^", "^_"};
+static const char *control_chars[] =
+    {"^@", "^A", "^B", "^C", "^D", "^E", "^F", "^G", "^H", "^I", "$",
+     "^K", "^L", "^M", "^N", "^O", "^P", "^Q", "^R", "^S", "^T", "^U",
+     "^V", "^W", "^X", "^Y", "^Z", "^[", "^\\", "^]", "^^", "^_"};
 
 static const int bom_byte_count[] = {3, 2, 2};
 
@@ -84,11 +84,14 @@ static bool verbose        = false;
 static bool convert        = false;
 static bool overwrite      = false;
 
-static void usage(void)
+static void
+usage(void)
 {
-    printf("USAGE: %s [-options] <file> [file2, file3, ...]\n", NAME);
-    printf("Concatenate file(s) to standard output, stripping BOMs "
-           "and CRs.\n");
+    printf(
+        "USAGE: %s [-options] <file> [file2, file3, ...]\n", NAME);
+    printf(
+        "Concatenate file(s) to standard output, stripping BOMs "
+        "and CRs.\n");
 #ifdef _WIN32
     printf(
         "\nPlease note that PowerShell adds BOM when "
@@ -96,16 +99,17 @@ static void usage(void)
         "and you should probably use cmd.exe instead. You will still get CRs "
         "that way.\n");
 #endif
-    printf("\nOPTIONS:\n"
-           "  -v              \tOutput summary.\n"
-           "  -n              \tOutput line numbers.\n"
-           "  -A              \tReplace control characters with their sequences.\n"
-           "  -s              \tSuppress all blank lines.\n"
-           "  -u              \tDon't buffer output.\n"
-           "  -c, --convert   \tConvert UTF-16 to UTF-8.\n"
-           "  -o, --overwrite \tDon't output, overwrite files instead.\n"
-           "      --help      \tDisplay this message.\n"
-           "      --version   \tDisplay version.\n");
+    printf(
+        "\nOPTIONS:\n"
+        "  -v              \tOutput summary.\n"
+        "  -n              \tOutput line numbers.\n"
+        "  -A              \tReplace control characters with their sequences.\n"
+        "  -s              \tSuppress all blank lines.\n"
+        "  -u              \tDon't buffer output.\n"
+        "  -c, --convert   \tConvert UTF-16 to UTF-8.\n"
+        "  -o, --overwrite \tDon't output, overwrite files instead.\n"
+        "      --help      \tDisplay this message.\n"
+        "      --version   \tDisplay version.\n");
     exit(0);
 }
 
@@ -116,7 +120,7 @@ void puterror(const char *filename)
     exit(1);
 }
 
-static bool bytescmp(char *bytes, size_t bytes_length, const char *bytes2)
+static bool compare_bytes(char *bytes, size_t bytes_length, const char *bytes2)
 {
     for (size_t i = 0; i < bytes_length; ++i) {
         if (bytes[i] != bytes2[i])
@@ -129,7 +133,7 @@ static bool bytescmp(char *bytes, size_t bytes_length, const char *bytes2)
 static int get_bom_length(char bytes[3], int *bom_index)
 {
     for (int i = 0; i < BOMS_LENGTH; ++i) {
-        if (bytescmp(bytes, bom_byte_count[i], bom_bytes[i])) {
+        if (compare_bytes(bytes, bom_byte_count[i], bom_bytes[i])) {
             *bom_index = i;
             return bom_byte_count[i];
         }
@@ -190,9 +194,10 @@ static bool set_flag(const char *str)
                     return true;
                 }
                 else if (strcmp(str, "--version") == 0) {
-                    printf("stripping cat %s\n"
-                           "(c) toiletbril %s\n",
-                           VERSION, GITHUB);
+                    printf(
+                        "stripping cat %s\n"
+                        "(c) toiletbril %s\n",
+                        VERSION, GITHUB);
                     exit(0);
                 }
                 else {
@@ -247,7 +252,8 @@ static int peek_bom(FILE *f, char *buf)
     fread(maybe_bom, sizeof(char), 3, f);
     int bom_len = get_bom_length(maybe_bom, &bom_index);
 
-    // This is a hack since STDIN can not be ungetc'd
+    // 'buf' thing is a hack since STDIN can not be ungetc'd
+    // and this chops 3 chars off of it
     int j = 0;
     for (int i = bom_len; i < 3; ++i) {
         buf[j++] = maybe_bom[i];
@@ -273,7 +279,8 @@ static void utf8_from_utf16(FILE *utf16_file, const char *filename, FILE *output
     while (fread(buffer, 2, 1, utf16_file) == 1) {
         if (be) {
             codepoint = (buffer[1] << 8) | buffer[0];
-        } else {
+        }
+        else {
             codepoint = (buffer[0] << 8) | buffer[1];
         }
 
@@ -298,7 +305,7 @@ static void utf8_from_utf16(FILE *utf16_file, const char *filename, FILE *output
         fputc(0x000a, output);
 }
 
-static void cats(FILE *f, const char *filename, const char* bom_buf, int bom, FILE* out)
+static void cats(FILE *f, const char *filename, const char *bom_buf, int bom, FILE *out)
 {
     FILE *buf_file = tmpfile();
 
@@ -325,7 +332,7 @@ static void cats(FILE *f, const char *filename, const char* bom_buf, int bom, FI
         }
 
         if (!buf_end) {
-            c = fgetc(buf_file);
+            c       = fgetc(buf_file);
             buf_end = c == EOF;
         }
 
@@ -377,7 +384,6 @@ static void cats(FILE *f, const char *filename, const char* bom_buf, int bom, FI
 
     fflush(out);
 
-    // C^C with verbose when using stdin is undefined behavior (?).
     if (verbose) {
         if (!prev_is_lf && out == stdout)
             fputc('\n', stderr);
@@ -419,7 +425,8 @@ static void catstemp(const char *filename, size_t size, char *buf)
     strncat(buf, ".catstemp", size);
 
     if (strncmp(filename, buf, size) == 0) {
-        fprintf(stderr, "%s: Filename is too long or there is already a .catstemp file.", NAME);
+        fprintf(stderr, "%s: Filename is too long or there is already a .catstemp file.",
+                NAME);
         exit(1);
     }
 }
@@ -467,7 +474,7 @@ int main(int argv, char **argc)
             exit(1);
         }
 
-        char buf[4] = { '\0' };
+        char buf[4] = {'\0'};
         set_binary_mode(stdin);
 
         cats(stdin, "STDIN", buf, peek_bom(stdin, buf), stdout);
@@ -494,15 +501,18 @@ int main(int argv, char **argc)
             puterror(filename);
         }
 
-        char buf[4] = { '\0' };
-        int bom = peek_bom(file, buf);
+        char buf[4] = {'\0'};
+        int bom     = peek_bom(file, buf);
 
         if ((convert && bom > 0) || overwrite) {
             char temp_filename[256];
             catstemp(filename, 256, temp_filename);
 
             if (strcmp(temp_filename, filename) == 0) {
-                fprintf(stderr, "%s: Error converting UTF16 to UTF8: Filename is too long", NAME);
+                fprintf(
+                    stderr,
+                    "%s: Error converting UTF-16 to UTF-8: Filename is too long",
+                    NAME);
                 fclose(file);
                 exit(1);
             }
@@ -514,7 +524,8 @@ int main(int argv, char **argc)
 
             if (convert && bom > 0) {
                 utf8_from_utf16(file, filename, new_file, bom == 1);
-            } else {
+            }
+            else {
                 copy_file(file, new_file);
             }
 
@@ -531,7 +542,8 @@ int main(int argv, char **argc)
                 }
 
                 cats(new_file, filename, buf, bom, file);
-            } else {
+            }
+            else {
                 cats(new_file, filename, buf, bom, stdout);
             }
 
