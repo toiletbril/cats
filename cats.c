@@ -1,5 +1,5 @@
 /*
-    cats 1.7
+    cats 1.8
 
     Strips BOMs and carriage returns from files and concatenates them to
     standard output.
@@ -32,9 +32,8 @@
     #define _CRT_SECURE_NO_WARNINGS
     #include <fcntl.h>
     #include <io.h>
-    #define DIR_CHAR '\\'
 #else
-    #define DIR_CHAR '/'
+    #define _DEFAULT_SOURCE
 #endif
 
 #include <ctype.h>
@@ -48,7 +47,7 @@
 #include <sys/stat.h>
 
 #define NAME "cats"
-#define VERSION "1.7"
+#define VERSION "1.8"
 #define GITHUB "<https://github.com/toiletbril>"
 
 #ifdef __BORLANDC__
@@ -61,11 +60,11 @@ static const char *control_chars[] =
      "^K", "^L", "^M", "^N", "^O", "^P", "^Q", "^R", "^S", "^T", "^U",
      "^V", "^W", "^X", "^Y", "^Z", "^[", "^\\", "^]", "^^", "^_"};
 
-static const int bom_byte_count[] = {3, 2, 2};
+static const size_t bom_byte_count[] = {3, 2, 2};
 
-static const char utf8[]    = {0xEF, 0xBB, 0xBF};
-static const char utf16be[] = {0xFE, 0xFF};
-static const char utf16le[] = {0xFF, 0xFE};
+static const char utf8[]    = {(char)0xEF, (char)0xBB, (char)0xBF};
+static const char utf16be[] = {(char)0xFE, (char)0xFF};
+static const char utf16le[] = {(char)0xFF, (char)0xFE};
 
 #define BOMS_LENGTH 3
 static const char *bom_bytes[] = {utf8, utf16be, utf16le};
@@ -83,8 +82,7 @@ static bool verbose        = false;
 static bool convert        = false;
 static bool overwrite      = false;
 
-static void
-usage(void)
+_Noreturn static void usage(void)
 {
     printf(
         "USAGE: %s [-options] <file> [file2, file3, ...]\n", NAME);
@@ -112,14 +110,14 @@ usage(void)
     exit(0);
 }
 
-void puterror(const char *filename)
+_Noreturn static void puterror(const char *filename)
 {
     fprintf(stderr, "%s: ", NAME);
     perror(filename);
     exit(1);
 }
 
-static bool compare_bytes(char *bytes, size_t bytes_length, const char *bytes2)
+static bool compare_bytes(const char *bytes, size_t bytes_length, const char *bytes2)
 {
     for (size_t i = 0; i < bytes_length; ++i) {
         if (bytes[i] != bytes2[i])
@@ -129,7 +127,7 @@ static bool compare_bytes(char *bytes, size_t bytes_length, const char *bytes2)
     return true;
 }
 
-static int get_bom_length(char bytes[3], int *bom_index)
+static size_t get_bom_length(const char bytes[3], int *bom_index)
 {
     for (int i = 0; i < BOMS_LENGTH; ++i) {
         if (compare_bytes(bytes, bom_byte_count[i], bom_bytes[i])) {
@@ -146,7 +144,7 @@ static bool set_flag(const char *str)
     if (str[0] != '-')
         return false;
 
-    int len = strlen(str);
+    int len = (int)strlen(str);
 
     for (int i = 1; i < len; ++i) {
         switch (str[i]) {
@@ -182,7 +180,6 @@ static bool set_flag(const char *str)
             case '-': {
                 if (strcmp(str, "--help") == 0) {
                     usage();
-                    exit(0);
                 }
                 if (strcmp(str, "--convert") == 0) {
                     convert = true;
@@ -221,9 +218,9 @@ static bool set_flag(const char *str)
     return true;
 }
 
-static bool get_control_seq(char *buf, const unsigned char c)
+static bool get_control_seq(char *buf, const int c)
 {
-    if (c >= CONTROL_CHARS_LENGTH)
+    if (c >= CONTROL_CHARS_LENGTH || c < 0)
         return false;
 
     strcpy(buf, control_chars[c]);
@@ -249,12 +246,12 @@ static int peek_bom(FILE *f, char *buf)
     int bom_index = -1;
 
     fread(maybe_bom, sizeof(char), 3, f);
-    int bom_len = get_bom_length(maybe_bom, &bom_index);
+    size_t bom_len = get_bom_length(maybe_bom, &bom_index);
 
     // 'buf' thing is a hack since STDIN can not be ungetc'd
     // and this chops 3 chars off of it
     int j = 0;
-    for (int i = bom_len; i < 3; ++i) {
+    for (size_t i = bom_len; i < 3; ++i) {
         buf[j++] = maybe_bom[i];
     }
     buf[3] = '\0';
@@ -316,7 +313,7 @@ static void cats(FILE *f, const char *filename, const char *bom_buf, int bom, FI
 
     bool buf_end = false;
 
-    static char c           = '\0';
+    static int c            = '\0';
     static int current_line = 0;
 
     static bool prev_is_lf = true;
@@ -430,7 +427,7 @@ static void catstemp(const char *filename, size_t size, char *buf)
     }
 }
 
-static void handle_sigint(int sig_n)
+_Noreturn static void handle_sigint(int sig_n)
 {
     signal(sig_n, SIG_IGN);
     fputc('\n', stdout);
@@ -497,7 +494,8 @@ int main(int argv, char **argc)
             cats(new_file, "STDIN", buf, bom, stdout);
             fclose(new_file);
             remove(temp_filename);
-        } else {
+        }
+        else {
             cats(stdin, "STDIN", buf, bom, stdout);
         }
         return 0;

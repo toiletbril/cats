@@ -2,7 +2,7 @@
 
 CC=clang
 CATS=cats.c
-FLAGS="-O2 -Wall -Wextra -pedantic"
+FLAGS="-O2 -Wall -Wextra -pedantic -std=c17"
 OUT=bin
 
 mkdir -p $OUT
