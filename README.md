@@ -1,6 +1,6 @@
 # cats
 
-Converts UTF-16 to UTF-8 and strips carriage returns from files and concatenates them to
+Converts UTF-16 to UTF-8, strips carriage returns, and concatenates files to
 standard output.
 
 Almost equivalent to `cat <...> | dos2unix`, but Windows doesn't have
@@ -11,7 +11,7 @@ that :c.
 ```console
 $ cats --help
 USAGE: cats [-options] <file> [file2, file3, ...]
-Concatenate file(s) to standard output, converting to UTF-8.
+Concatenate file(s) to standard output, converting them to UTF-8.
 
 Please note that PowerShell adds BOM when redirecting output,
 and you should probably use cmd.exe instead. You will still get CRs that way.

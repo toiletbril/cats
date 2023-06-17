@@ -86,7 +86,7 @@ _Noreturn static void usage(void)
     printf(
         "USAGE: %s [-options] <file> [file2, file3, ...]\n", NAME);
     printf(
-        "Concatenate file(s) to standard output, converting to UTF-8.\n");
+        "Concatenate file(s) to standard output, converting them to UTF-8.\n");
 #ifdef _WIN32
     printf(
         "\nPlease note that PowerShell adds BOM when "
