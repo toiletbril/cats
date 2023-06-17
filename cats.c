@@ -68,7 +68,7 @@ static const char utf16le[] = {(char)0xFF, (char)0xFE};
 
 #define BOMS_LENGTH 3
 static const char *bom_bytes[] = {utf8, utf16be, utf16le};
-static const char *bom_names[] = {"UTF-8", "UTF-16BE", "UTF-16LE"};
+static const char *bom_names[] = {"UTF-8 with BOM", "UTF-16BE", "UTF-16LE"};
 
 #define BUFFER_SIZE 1024
 #define BUFFER_TYPE _IOFBF
@@ -79,7 +79,6 @@ static bool show_control   = false;
 static bool use_stdin      = false;
 static bool unbuffered     = false;
 static bool verbose        = false;
-static bool convert        = false;
 static bool overwrite      = false;
 
 _Noreturn static void usage(void)
@@ -87,8 +86,7 @@ _Noreturn static void usage(void)
     printf(
         "USAGE: %s [-options] <file> [file2, file3, ...]\n", NAME);
     printf(
-        "Concatenate file(s) to standard output, stripping BOMs "
-        "and CRs.\n");
+        "Concatenate file(s) to standard output, converting to UTF-8.\n");
 #ifdef _WIN32
     printf(
         "\nPlease note that PowerShell adds BOM when "
@@ -98,13 +96,12 @@ _Noreturn static void usage(void)
 #endif
     printf(
         "\nOPTIONS:\n"
-        "  -v              \tOutput summary.\n"
+        "  -v              \tDisplay summary.\n"
+        "  -o, --overwrite \tDon't output, overwrite files instead.\n"
         "  -n              \tOutput line numbers.\n"
         "  -A              \tReplace control characters with their sequences.\n"
         "  -s              \tSuppress all blank lines.\n"
         "  -u              \tDon't buffer output.\n"
-        "  -c, --convert   \tConvert UTF-16 to UTF-8.\n"
-        "  -o, --overwrite \tDon't output, overwrite files instead.\n"
         "      --help      \tDisplay this message.\n"
         "      --version   \tDisplay version.\n");
     exit(0);
@@ -168,10 +165,6 @@ static bool set_flag(const char *str)
                 unbuffered = true;
             } break;
 
-            case 'c': {
-                convert = true;
-            } break;
-
             case 'o': {
                 overwrite = true;
             } break;
@@ -180,10 +173,6 @@ static bool set_flag(const char *str)
             case '-': {
                 if (strcmp(str, "--help") == 0) {
                     usage();
-                }
-                if (strcmp(str, "--convert") == 0) {
-                    convert = true;
-                    return true;
                 }
                 if (strcmp(str, "--overwrite") == 0) {
                     overwrite = true;
@@ -254,7 +243,7 @@ static int peek_bom(FILE *f, char *buf)
     for (size_t i = bom_len; i < 3; ++i) {
         buf[j++] = maybe_bom[i];
     }
-    buf[3] = '\0';
+    buf[j] = '\0';
 
     return bom_index;
 }
@@ -392,9 +381,7 @@ static void cats(FILE *f, const char *filename, const char *bom_buf, int bom, FI
             fputs("No CRs found", stderr);
 
         if (bom != -1) {
-            fprintf(stderr, ", removed %s mark", bom_names[bom]);
-            if (convert && bom > 0)
-                fprintf(stderr, ", converted to UTF-8");
+            fprintf(stderr, ", converted %s to UTF-8", bom_names[bom]);
         }
         else
             fputs(", no BOM found", stderr);
@@ -475,7 +462,7 @@ int main(int argv, char **argc)
 
         int bom = peek_bom(stdin, buf);
 
-        if (convert && bom > 0) {
+        if (bom > 0) {
             char temp_filename[64];
             catstemp("STDIN", 64, temp_filename);
 
@@ -524,7 +511,7 @@ int main(int argv, char **argc)
         char buf[4] = {0};
         int bom     = peek_bom(file, buf);
 
-        if ((convert && bom > 0) || overwrite) {
+        if (bom > 0 || overwrite) {
             char temp_filename[256];
             catstemp(filename, 256, temp_filename);
 
@@ -542,7 +529,7 @@ int main(int argv, char **argc)
                 puterror(temp_filename);
             }
 
-            if (convert && bom > 0) {
+            if (bom > 0) {
                 utf8_from_utf16(file, filename, new_file, bom == 1);
             }
             else {
